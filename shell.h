@@ -3,6 +3,10 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <unistd.h>
 
-void get_comand(void);
+extern std::string cmd;
+extern int status;
+void get_command(void);
 std::vector <std::string> preasing (std::string inputLine);
+int get_status(void);
