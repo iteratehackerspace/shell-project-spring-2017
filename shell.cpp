@@ -6,6 +6,28 @@ using std::cout;
 using std::cin;
 using std::endl;
 using std::stringstream;
+using std::unordered_map;
+using std::memcpy;
+        
+unordered_map<string, string> env = {
+    ///this is just for try... instead of leaving it empty...
+    {"RED","#FF0000"},
+    {"GREEN","#00FF00"},
+    {"BLUE","#0000FF"}
+    };
+ 
+
+const char ** hash_char(){
+    const char **envv= new const char* [env.size()+1];
+    
+    int i=0;
+    for( const auto& n : env ) {
+        envv[i]=new char[(n.first + "=" + n.second).size()]; 
+        memcpy(envv+i, (n.first + "=" + n.second).c_str(),(n.first + "=" + n.second).size() +1);
+        i++;
+    }
+    envv[i]=NULL;
+} 
 
 struct Path {
   vector<string> paths;
@@ -78,13 +100,16 @@ void add_spaces(string input_line, size_t& pos1, size_t pos2) {
 }
 
 void fork_exec(vector<string> vector_arg){
-    //execvp accepts only an array of string pointers
+    //execve accepts only an array of string pointers
     const char *program =(vector_arg[0]).c_str();
     const char **arg = new const char* [vector_arg.size()+2];  //extra space for program name and sentinel
     arg [0] = program;
-    for (size_t i = 0;  i < vector_arg.size()+1;  ++i)
-            arg [i+1] = (vector_arg[i]).c_str();
-
+    for (size_t i = 0;  i < vector_arg.size()+1;  ++i){
+        arg [i+1] = new char[vector_arg[i].size()];
+        //arg [i+1] = (vector_arg[i]).c_str();
+        memcpy(arg+i+1, vector_arg[i].c_str(), (vector_arg[i]).size()+1);
+    }
+  
     arg [vector_arg.size()+1] = NULL;  // end of arguments sentinel is NULL
 
     int pid =fork();
@@ -93,8 +118,9 @@ void fork_exec(vector<string> vector_arg){
     }
     else if(pid == 0){
         //child
-        //exec is execute, 'p': give the name of the program and the operating system will look for the program in the path
-        execvp(program, (char **)arg );
+        //exec is execute
+        const char** environment=hash_char();
+        execve(program, (char **)arg, (char **)environment);
     }
     else{
         //parent
@@ -110,4 +136,5 @@ void get_comand(void) {
   parsed_commands = parsing(input_line);
 
   fork_exec(parsed_commands);
+  
 }
