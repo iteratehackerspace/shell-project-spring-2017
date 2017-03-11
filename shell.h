@@ -9,3 +9,4 @@
 
 void get_comand(void);
 std::vector <std::string> parasing (std::string inputLine);
+struct Path;
