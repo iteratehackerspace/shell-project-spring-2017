@@ -6,14 +6,17 @@ using std::cout;
 using std::cin;
 using std::endl;
 using std::stringstream;
+using std::find;
 
 struct Path {
   vector<string> paths;
+
   void show_path(){
     for (size_t i = 0; i < paths.size(); i++) {
-      cout<<paths[i];
+      cout<<paths[i]<<endl;
     }
   }
+
   void add_path(string path){
     bool shouldAdd = true;
     for (size_t i = 0; i < paths.size(); i++) {
@@ -28,6 +31,7 @@ struct Path {
       cout<<"The path already exists \n";
     }
   }
+
   void delete_path(string path){
     for (size_t i = 0; i < paths.size(); i++) {
       if(paths[i] == path){
@@ -36,7 +40,15 @@ struct Path {
       }
     }
   }
+
 };
+
+void start_up(Path & all_pathes){
+  vector <string> default_pathes {"/usr/local/sbin", "/usr/local/bin","/usr/sbin","/usr/bin","/sbin","/bin","/usr/games","/usr/local/games"};
+  for (size_t i = 0; i < default_pathes.size(); i++) {
+    all_pathes.add_path(default_pathes[i]);
+  }
+}
 
 vector<string> parsing (string input_line){
   for (size_t i = 0; i < input_line.size(); i++) {
@@ -64,9 +76,6 @@ vector<string> parsing (string input_line){
   vector<string> return_value ;
   for (string word; ss>>word;) {
     return_value.push_back(word);
-  }
-  for (size_t i = 0; i < return_value.size(); i++) {
-    cout << return_value[i] << endl;
   }
   return return_value;
 }
@@ -104,10 +113,34 @@ void fork_exec(vector<string> vector_arg){
 
 void get_comand(void) {
   string input_line;
+  static bool firs_call = true;
+  static Path all_pathes;
+  if(firs_call){
+    start_up(all_pathes);
+    firs_call = false;
+  }
   vector<string> parsed_commands;
   cout << "[oh my gosh shell] $ ";
   getline (cin, input_line) ;
   parsed_commands = parsing(input_line);
-
+  for (size_t i = 0; i < parsed_commands.size(); i++) {
+    if(parsed_commands[i] == "delete_path"){
+      if(parsed_commands.size() >= i + 1){
+        all_pathes.delete_path(parsed_commands[i + 1]);
+      }else{
+        cout<<"Missing argument\n";
+      }
+    }
+    else if(parsed_commands[i] == "add_path"){
+        if(parsed_commands.size() >= i + 1){
+          all_pathes.add_path(parsed_commands[i + 1]);
+        }else{
+          cout<<"Missing argument\n";
+        }
+    }
+    else if(parsed_commands[i] == "show_path"){
+        all_pathes.show_path();
+    }
+  }
   fork_exec(parsed_commands);
 }
